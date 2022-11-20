@@ -5,15 +5,29 @@ import itertools
 import geneticAlgorithm
 import plot
 import imageio
+import click
 
-def cli():
-    targetImage = imageio.imread('test.jpg')
+@click.command()
+@click.option('--figure', '-f', help='Figure relative path.')
+@click.option('--output', '-o', default=os.curdir + '//', help='Output relative path.')
+@click.option('--savepoint', '-s', default=500, help='Savepoint interval.')
+@click.option('--population', '-p', default=8, help='Solutions per Population.')
+@click.option('--mating', '-m', default=4, help='Number of Parents Mating.')
+@click.option('--mutation', '-d', default=0.01, help='Mutation Percent.')
+@click.option('--generations', '-g', default=50000, help='Number of generations.')
+@click.option('--verbose', '-v', is_flag=True, help='Output log to the terminal.')
+def cli(figure, output, savepoint, population, mating, mutation, generations, verbose):
+    if figure == None:
+        print('ERRO: É necessário uma imagem inicial.')
+        sys.exit(1)
+
+    targetImage = imageio.v2.imread(figure)
     targetChromosome = geneticAlgorithm.imageToChromosome(targetImage)
     shape = targetImage.shape
 
-    solutionPerPopulation = 8
-    numberOfParentsMating = 4
-    mutationPercent = 0.01
+    solutionPerPopulation = population
+    numberOfParentsMating = mating
+    mutationPercent = mutation
 
     numberOfPossiblePermutations = len(list(itertools.permutations(iterable = numpy.arange(0, numberOfParentsMating), r = 2)))
     numberOfRequiredPermutations = solutionPerPopulation - numberOfPossiblePermutations
@@ -24,16 +38,20 @@ def cli():
         sys.exit(1)
 
     newPopulation = geneticAlgorithm.createInitialPopulation(shape, solutionPerPopulation)
-    for iteration in range(50000):
+    for iteration in range(generations):
         qualities = geneticAlgorithm.populationFitness(targetChromosome, newPopulation)
-        print('INFO: Quality: ', numpy.max(qualities), ' Iteration: ', iteration)
+        if verbose:
+            print('INFO: Quality: ', numpy.max(qualities), ' Iteration: ', iteration)
 
         parents = geneticAlgorithm.selectMatingPool(newPopulation, qualities, numberOfParentsMating)
         newPopulation = geneticAlgorithm.crossover(parents, shape, solutionPerPopulation)
         newPopulation = geneticAlgorithm.mutation(newPopulation, numberOfParentsMating, mutationPercent)
-        plot.saveImages(iteration, qualities, newPopulation, shape, 500, os.curdir + '//')
+        plot.saveImages(iteration, qualities, newPopulation, shape, savepoint, output)
         
-    plot.showIndividuals(newPopulation, shape)
+    if verbose:
+        plot.showIndividuals(newPopulation, shape)
+    
+
 
 if __name__ == '__main__':
     cli()
