@@ -29,6 +29,8 @@ def cli(figure, output, savepoint, population, mating, mutation, generations, ve
     numberOfParentsMating = mating
     mutationPercent = mutation
 
+    imageArray = []
+
     numberOfPossiblePermutations = len(list(itertools.permutations(iterable = numpy.arange(0, numberOfParentsMating), r = 2)))
     numberOfRequiredPermutations = solutionPerPopulation - numberOfPossiblePermutations
 
@@ -46,11 +48,12 @@ def cli(figure, output, savepoint, population, mating, mutation, generations, ve
         parents = geneticAlgorithm.selectMatingPool(newPopulation, qualities, numberOfParentsMating)
         newPopulation = geneticAlgorithm.crossover(parents, shape, solutionPerPopulation)
         newPopulation = geneticAlgorithm.mutation(newPopulation, numberOfParentsMating, mutationPercent)
-        plot.saveImages(iteration, qualities, newPopulation, shape, savepoint, output)
+        plot.saveImages(iteration, qualities, newPopulation, shape, savepoint, output, imageArray)
         
     if verbose:
         plot.showIndividuals(newPopulation, shape)
     
+    imageio.mimsave(output + 'solution.gif', imageArray, duration = 5)
 
 
 if __name__ == '__main__':

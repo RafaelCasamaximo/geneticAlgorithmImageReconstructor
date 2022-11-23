@@ -1,15 +1,18 @@
 import numpy
 import matplotlib.pyplot
 import geneticAlgorithm
+import cv2
 
-def saveImages(currentIteration, qualities, newPopulation, shape, savePoint, saveDirectory):
+def saveImages(currentIteration, qualities, newPopulation, shape, savePoint, saveDirectory, imageArray):
     """
     Salva a melhor solução de acordo com a função fitness daquela geração como uma image no diretório especificado.
     """
+    
     if numpy.mod(currentIteration, savePoint) == 0:
+        matplotlib.pyplot.imsave(saveDirectory + 'solution_' + str(currentIteration) + '.png', bestSolutionImage)
         bestSolutionChromosome = newPopulation[numpy.where(qualities == numpy.max(qualities))[0][0], :]
         bestSolutionImage = geneticAlgorithm.chromosomeToImage(bestSolutionChromosome, shape)
-        matplotlib.pyplot.imsave(saveDirectory + 'solution_' + str(currentIteration) + '.png', bestSolutionImage)
+        imageArray.append(bestSolutionImage)
 
 def showIndividuals(individuals, shape):
     """
@@ -31,3 +34,6 @@ def showIndividuals(individuals, shape):
                 currentImage = geneticAlgorithm.chromosomeToImage(individuals[currentIndividual, :], shape)
                 axis[idRow, idCol].imshow(currentImage)
                 currentIndividual = currentIndividual + 1
+    matplotlib.pyplot.show()
+    
+    
