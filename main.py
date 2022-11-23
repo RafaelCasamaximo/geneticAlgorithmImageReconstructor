@@ -66,20 +66,21 @@ def cli(figure, output, savepoint, imageinterval, population, mating, mutation, 
     data = {
         'targetFitness': targetFitness,
         'qualitiesArray': [x for x in qualitiesArray],
-        'time': [i for i in range(generations)] 
+        'time': [i for i in range(generations)],
+        'qualityPercent': [(i / targetFitness) * 100 for i in qualitiesArray],
+        'fullPercent': [100 for i in range(generations)]
     }
 
     df = pd.DataFrame(data)
 
-    matplotlib.pyplot.plot(df['time'], df['targetFitness'], color='red', marker=',', label = 'Target')
-    matplotlib.pyplot.plot(df['time'], df['qualitiesArray'], color='blue', marker=',', label = 'Current')
-    # matplotlib.pyplot.ylim([min(data['qualitiesArray']), data['targetFitness']])
-    matplotlib.pyplot.title('Quality vs Generation', fontsize=14)
-    matplotlib.pyplot.xlabel('Generations', fontsize=14)
-    matplotlib.pyplot.ylabel('Quality', fontsize=14)
-    matplotlib.pyplot.grid(True)
-    matplotlib.pyplot.show()
-
+    if report:
+        matplotlib.pyplot.plot(df['time'], df['targetFitness'], color='red', marker=',', label = 'Target')
+        matplotlib.pyplot.plot(df['time'], df['qualitiesArray'], color='blue', marker=',', label = 'Current')
+        matplotlib.pyplot.title('Quality vs Generation', fontsize=14)
+        matplotlib.pyplot.xlabel('Generations', fontsize=14)
+        matplotlib.pyplot.ylabel('Quality', fontsize=14)
+        matplotlib.pyplot.grid(True)
+        matplotlib.pyplot.show()
 
 if __name__ == '__main__':
     cli()
