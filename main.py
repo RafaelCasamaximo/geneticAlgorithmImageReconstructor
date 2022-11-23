@@ -6,17 +6,19 @@ import geneticAlgorithm
 import plot
 import imageio
 import click
+import matplotlib.pyplot
 
 @click.command()
 @click.option('--figure', '-f', help='Figure relative path.')
 @click.option('--output', '-o', default=os.curdir + '//', help='Output relative path.')
-@click.option('--savepoint', '-s', default=500, help='Savepoint interval.')
+@click.option('--savepoint', '-s', default=500, help='Gif savepoint interval.')
+@click.option('--imageinterval', '-i', default=0, help='Savepoint interval to write image file. No images are created if not included.')
 @click.option('--population', '-p', default=8, help='Solutions per Population.')
 @click.option('--mating', '-m', default=4, help='Number of Parents Mating.')
 @click.option('--mutation', '-d', default=0.01, help='Mutation Percent.')
 @click.option('--generations', '-g', default=50000, help='Number of generations.')
 @click.option('--verbose', '-v', is_flag=True, help='Output log to the terminal.')
-def cli(figure, output, savepoint, population, mating, mutation, generations, verbose):
+def cli(figure, output, savepoint, imageinterval, population, mating, mutation, generations, verbose):
     if figure == None:
         print('ERRO: É necessário uma imagem inicial.')
         sys.exit(1)
@@ -48,11 +50,12 @@ def cli(figure, output, savepoint, population, mating, mutation, generations, ve
         parents = geneticAlgorithm.selectMatingPool(newPopulation, qualities, numberOfParentsMating)
         newPopulation = geneticAlgorithm.crossover(parents, shape, solutionPerPopulation)
         newPopulation = geneticAlgorithm.mutation(newPopulation, numberOfParentsMating, mutationPercent)
-        plot.saveImages(iteration, qualities, newPopulation, shape, savepoint, output, imageArray)
+        plot.saveImages(iteration, qualities, newPopulation, shape, savepoint, imageinterval, output, imageArray)
         
     if verbose:
         plot.showIndividuals(newPopulation, shape)
     
+    matplotlib.pyplot.imsave(output + 'solution' + '.png', imageArray[-1])
     imageio.mimsave(output + 'solution.gif', imageArray)
 
 
