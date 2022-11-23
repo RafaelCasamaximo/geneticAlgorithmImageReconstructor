@@ -53,7 +53,7 @@ def cli(figure, output, savepoint, population, mating, mutation, generations, ve
     if verbose:
         plot.showIndividuals(newPopulation, shape)
     
-    imageio.mimsave(output + 'solution.gif', imageArray, duration = 5)
+    imageio.mimsave(output + 'solution.gif', imageArray)
 
 
 if __name__ == '__main__':
