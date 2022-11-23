@@ -9,9 +9,9 @@ def saveImages(currentIteration, qualities, newPopulation, shape, savePoint, sav
     """
     
     if numpy.mod(currentIteration, savePoint) == 0:
-        matplotlib.pyplot.imsave(saveDirectory + 'solution_' + str(currentIteration) + '.png', bestSolutionImage)
         bestSolutionChromosome = newPopulation[numpy.where(qualities == numpy.max(qualities))[0][0], :]
         bestSolutionImage = geneticAlgorithm.chromosomeToImage(bestSolutionChromosome, shape)
+        matplotlib.pyplot.imsave(saveDirectory + 'solution_' + str(currentIteration) + '.png', bestSolutionImage)
         imageArray.append(bestSolutionImage)
 
 def showIndividuals(individuals, shape):
