@@ -7,6 +7,7 @@ import plot
 import imageio
 import click
 import matplotlib.pyplot
+import pandas as pd
 
 @click.command()
 @click.option('--figure', '-f', help='Figure relative path.')
@@ -18,7 +19,8 @@ import matplotlib.pyplot
 @click.option('--mutation', '-d', default=0.01, help='Mutation Percent.')
 @click.option('--generations', '-g', default=50000, help='Number of generations.')
 @click.option('--verbose', '-v', is_flag=True, help='Output log to the terminal.')
-def cli(figure, output, savepoint, imageinterval, population, mating, mutation, generations, verbose):
+@click.option('--report', '-r', is_flag=True, help='Generate a report with the data.')
+def cli(figure, output, savepoint, imageinterval, population, mating, mutation, generations, verbose, report):
     if figure == None:
         print('ERRO: É necessário uma imagem inicial.')
         sys.exit(1)
@@ -26,6 +28,8 @@ def cli(figure, output, savepoint, imageinterval, population, mating, mutation, 
     targetImage = imageio.v2.imread(figure)
     targetChromosome = geneticAlgorithm.imageToChromosome(targetImage)
     shape = targetImage.shape
+    targetFitness = numpy.sum(targetChromosome)
+    qualitiesArray = []
 
     solutionPerPopulation = population
     numberOfParentsMating = mating
@@ -44,6 +48,7 @@ def cli(figure, output, savepoint, imageinterval, population, mating, mutation, 
     newPopulation = geneticAlgorithm.createInitialPopulation(shape, solutionPerPopulation)
     for iteration in range(generations):
         qualities = geneticAlgorithm.populationFitness(targetChromosome, newPopulation)
+        qualitiesArray.append(numpy.max(qualities))
         if verbose:
             print('INFO: Quality: ', numpy.max(qualities), ' Iteration: ', iteration)
 
@@ -57,6 +62,23 @@ def cli(figure, output, savepoint, imageinterval, population, mating, mutation, 
     
     matplotlib.pyplot.imsave(output + 'solution' + '.png', imageArray[-1])
     imageio.mimsave(output + 'solution.gif', imageArray)
+
+    data = {
+        'targetFitness': targetFitness,
+        'qualitiesArray': [x for x in qualitiesArray],
+        'time': [i for i in range(generations)] 
+    }
+
+    df = pd.DataFrame(data)
+
+    matplotlib.pyplot.plot(df['time'], df['targetFitness'], color='red', marker=',', label = 'Target')
+    matplotlib.pyplot.plot(df['time'], df['qualitiesArray'], color='blue', marker=',', label = 'Current')
+    # matplotlib.pyplot.ylim([min(data['qualitiesArray']), data['targetFitness']])
+    matplotlib.pyplot.title('Quality vs Generation', fontsize=14)
+    matplotlib.pyplot.xlabel('Generations', fontsize=14)
+    matplotlib.pyplot.ylabel('Quality', fontsize=14)
+    matplotlib.pyplot.grid(True)
+    matplotlib.pyplot.show()
 
 
 if __name__ == '__main__':
