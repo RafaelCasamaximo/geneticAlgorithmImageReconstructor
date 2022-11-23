@@ -8,10 +8,12 @@ import imageio
 import click
 import matplotlib.pyplot
 import pandas as pd
+from tqdm import tqdm
+import os
 
 @click.command()
 @click.option('--figure', '-f', help='Figure relative path.')
-@click.option('--output', '-o', default=os.curdir + '//', help='Output relative path.')
+@click.option('--output', '-o', default=os.curdir, help='Output relative path.')
 @click.option('--savepoint', '-s', default=500, help='Gif savepoint interval.')
 @click.option('--imageinterval', '-i', default=0, help='Savepoint interval to write image file. No images are created if not included.')
 @click.option('--population', '-p', default=8, help='Solutions per Population.')
@@ -24,6 +26,11 @@ def cli(figure, output, savepoint, imageinterval, population, mating, mutation, 
     if figure == None:
         print('ERRO: É necessário uma imagem inicial.')
         sys.exit(1)
+
+    auxDirectory = "/"
+
+    if os.name == 'nt':
+        auxDirectory = "\\"
 
     targetImage = imageio.v2.imread(figure)
     targetChromosome = geneticAlgorithm.imageToChromosome(targetImage)
@@ -46,7 +53,7 @@ def cli(figure, output, savepoint, imageinterval, population, mating, mutation, 
         sys.exit(1)
 
     newPopulation = geneticAlgorithm.createInitialPopulation(shape, solutionPerPopulation)
-    for iteration in range(generations):
+    for iteration in tqdm(range(generations)):
         qualities = geneticAlgorithm.populationFitness(targetChromosome, newPopulation)
         qualitiesArray.append(numpy.max(qualities))
         if verbose:
@@ -55,13 +62,15 @@ def cli(figure, output, savepoint, imageinterval, population, mating, mutation, 
         parents = geneticAlgorithm.selectMatingPool(newPopulation, qualities, numberOfParentsMating)
         newPopulation = geneticAlgorithm.crossover(parents, shape, solutionPerPopulation)
         newPopulation = geneticAlgorithm.mutation(newPopulation, numberOfParentsMating, mutationPercent)
-        plot.saveImages(iteration, qualities, newPopulation, shape, savepoint, imageinterval, output, imageArray)
+        plot.saveImages(iteration, qualities, newPopulation, shape, savepoint, imageinterval, output, imageArray, auxDirectory)
         
     if verbose:
         plot.showIndividuals(newPopulation, shape)
     
-    matplotlib.pyplot.imsave(output + 'solution' + '.png', imageArray[-1])
-    imageio.mimsave(output + 'solution.gif', imageArray)
+    if imageinterval > 0:
+        matplotlib.pyplot.imsave(output + auxDirectory + 'solution.png', imageArray[-1])
+
+    imageio.mimsave(output + auxDirectory + 'solution.gif', imageArray)
 
     data = {
         'targetFitness': targetFitness,
@@ -80,6 +89,7 @@ def cli(figure, output, savepoint, imageinterval, population, mating, mutation, 
         matplotlib.pyplot.xlabel('Generations', fontsize=14)
         matplotlib.pyplot.ylabel('Quality', fontsize=14)
         matplotlib.pyplot.grid(True)
+        matplotlib.pyplot.savefig(output + auxDirectory + 'report' + '.png')
         matplotlib.pyplot.show()
 
 if __name__ == '__main__':
